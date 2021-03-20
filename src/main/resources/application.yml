@@ -1,0 +1,15 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/postgres?schema=scwebflux
+    username: root
+    password: root
+
+#logging:
+ # pattern:
+  #  console: "%d %-5level %logger : %msg%n"
+   # file: "%d %-5level [%thread] %logger : %msg%n"
+  #level:
+   # org.springframework: DEBUG
+  #file:
+   # name: logs/application-debug.logging
+
