@@ -2,17 +2,17 @@ package br.com.cbgomes.webflux.contact.integration;
 
 import br.com.cbgomes.webflux.contact.domain.Contact;
 import br.com.cbgomes.webflux.contact.repository.ContactRepository;
-import br.com.cbgomes.webflux.contact.service.ContactService;
 import br.com.cbgomes.webflux.contact.service.ContactServiceImpl;
 import br.com.cbgomes.webflux.contact.util.ContactCreator;
+import br.com.cbgomes.webflux.security.ClientWeb;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.BDDMockito;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Description;
@@ -23,7 +23,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 import java.util.List;
 
@@ -36,12 +35,26 @@ public class ContactResourceIt {
     private ContactRepository repository;
 
     @Autowired
-    private WebTestClient webTestClient;
+
+    private ClientWeb clientWeb;
+
+    private WebTestClient webTestClientUser;
+
+    private WebTestClient webTestClientAdmin;
+
+    //private WebTestClient webTestClientUserInvalid;
 
     private final Contact contact = ContactCreator.createContactValidCreate();
 
     @BeforeEach
     public void setUp() {
+
+        this.webTestClientUser = this.clientWeb.webClientAuthenticated("user", "cbgomes");
+
+        this.webTestClientAdmin = this.clientWeb.webClientAuthenticated("admin", "cbgomes");
+
+       // this.webTestClientUserInvalid = this.clientWeb.webClientAuthenticated("invalid", "invalid");
+
         BDDMockito.when(this.repository.findAll())
                 .thenReturn(Flux.just(contact));
 
@@ -65,8 +78,7 @@ public class ContactResourceIt {
     @Test
     @Description("getAll -> return all contact")
     public void getAll_ReturnFluxOfContacts_WhenSuccessful(){
-
-        webTestClient
+        webTestClientAdmin
                 .get()
                 .uri("/api/reactive/contacts")
                 .exchange()
@@ -80,7 +92,7 @@ public class ContactResourceIt {
     @Description("save -> return the contact exists")
     public void save_ReturnMonoOfContacts_WhenSuccessful(){
         Contact contactSaved = ContactCreator.createContactBuilderValid();
-        webTestClient
+        webTestClientUser
                 .post()
                 .uri("/api/reactive/contacts")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -96,7 +108,7 @@ public class ContactResourceIt {
     @Description("saveBatch -> return all contacts saved in batch")
     public void saveBatch_ReturnMonoOfContacts_WhenSuccessful(){
         Contact contactSaved = ContactCreator.createContactBuilderValid();
-        webTestClient
+        webTestClientUser
                 .post()
                 .uri("/api/reactive/contacts/batch")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +124,7 @@ public class ContactResourceIt {
     @Test
     @Description("findById -> return the contact exists by id")
     public void findById_ReturnContactMono_WhenSuccessful() {
-        webTestClient
+        webTestClientUser
                 .get()
                 .uri("/api/reactive/contacts/{id}", 1)
                 .exchange()
@@ -128,7 +140,7 @@ public class ContactResourceIt {
         BDDMockito.when(this.repository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Mono.empty());
 
-        webTestClient
+        webTestClientUser
                 .get()
                 .uri("/api/reactive/contacts/{id}", 1)
                 .exchange()
@@ -141,7 +153,7 @@ public class ContactResourceIt {
     @Test
     @DisplayName("delete removes the contact when successful")
     public void delete_RemovesContact_WhenSuccessful() {
-        webTestClient
+        webTestClientUser
                 .delete()
                 .uri("/api/reactive/contacts/{id}", 1)
                 .exchange()
@@ -154,7 +166,7 @@ public class ContactResourceIt {
         BDDMockito.when(this.repository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Mono.empty());
 
-        webTestClient
+        webTestClientUser
                 .delete()
                 .uri("/api/reactive/contacts/{id}", 1)
                 .exchange()
@@ -167,7 +179,7 @@ public class ContactResourceIt {
     @Test
     @DisplayName("update save updated contact and returns empty mono when successful")
     public void update_SaveUpdatedContact_WhenSuccessful() {
-        webTestClient
+        webTestClientUser
                 .put()
                 .uri("/api/reactive/contacts/{id}", 1)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +194,7 @@ public class ContactResourceIt {
         BDDMockito.when(this.repository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Mono.empty());
 
-        webTestClient.put()
+        webTestClientUser.put()
                 .uri("/api/reactive/contacts/{id}", 1)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(contact))
