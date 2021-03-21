@@ -1,12 +1,12 @@
-Hey guys,
+Hey, guys,
 
-I build this project to all what's developers interested to learn the basic the spring webflux.
+I developed this basic project for those interested in learning the basics about Spring Webflux.
 
-How execute this project ? Is very simple. 
+How to execute this project? It's very simple.
 
-Run the file docker-compose.yml to create the databse. Is necessary docker installed in your machine.
-On sequence, run the application in the port 8080.
+Run the docker-compose.yml file to create the database. You need to have a docker installed on your machine.
+Then, run the application on port 8080.
 
-This project contains all the test in all layers, resources, services and repository, include tests the integration. All with mokito.
+This project contains all tests on all layers, resources, services and repository, including integration tests. Everything with mokito.
 
-Wait to news implamentations
+Wait for new implementations
