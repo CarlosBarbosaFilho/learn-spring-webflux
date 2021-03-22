@@ -26,6 +26,8 @@ public class SecurityConfiguration {
                     .disable()
                 .authorizeExchange()
                     .pathMatchers(HttpMethod.POST, "/api/reactive/contacts/**").hasAnyRole("ADMIN")
+                    .pathMatchers(HttpMethod.PUT, "/api/reactive/contacts/**").hasAnyRole("ADMIN")
+                    .pathMatchers(HttpMethod.DELETE, "/api/reactive/contacts/**").hasAnyRole("ADMIN")
                     .pathMatchers(HttpMethod.GET, "/api/reactive/contacts/**").hasAnyRole("USER")
                     .anyExchange().authenticated()
                 .and()
