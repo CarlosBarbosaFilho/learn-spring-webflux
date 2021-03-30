@@ -13,11 +13,14 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Description;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -27,10 +30,14 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
-@ExtendWith ( SpringExtension.class )
-@WebFluxTest
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebTestClient
 @Import( ContactServiceImpl.class )
 public class ContactResourceIt {
+
+    private static final String ADMIN_USER = "admin";
+    private static final String REGULAR_USER = "user";
 
     @MockBean
     private ContactRepository repository;
@@ -78,6 +85,7 @@ public class ContactResourceIt {
 
     @Test
     @Description("save -> return the contact exists")
+    @WithUserDetails (ADMIN_USER)
     public void save_ReturnMonoOfContacts_WhenSuccessful(){
         Contact contactSaved = ContactCreator.createContactBuilderValid();
         webTestClient
@@ -94,18 +102,20 @@ public class ContactResourceIt {
 
     @Test
     @Description("saveBatch -> return all contacts saved in batch")
+    @WithUserDetails (ADMIN_USER)
     public void saveBatch_ReturnMonoOfContacts_WhenSuccessful(){
         Contact contactSaved = ContactCreator.createContactBuilderValid();
+
         webTestClient
                 .post()
                 .uri("/api/reactive/contacts/batch")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(List.of(contactSaved,contactSaved)))
+                .body(BodyInserters.fromValue(List.of(contactSaved, contactSaved)))
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBodyList(Contact.class)
                 .hasSize(2)
-                .contains(contact);
+                .contains(contact,contact);
 
     }
 
@@ -140,6 +150,7 @@ public class ContactResourceIt {
 
     @Test
     @DisplayName("delete removes the contact when successful")
+    @WithUserDetails (ADMIN_USER)
     public void delete_RemovesContact_WhenSuccessful() {
         webTestClient
                 .delete()
@@ -150,6 +161,7 @@ public class ContactResourceIt {
 
     @Test
     @DisplayName("delete returns Mono error when contact does not exist")
+    @WithUserDetails (ADMIN_USER)
     public void delete_ReturnMonoError_WhenEmptyMonoIsReturned() {
         BDDMockito.when(this.repository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Mono.empty());
@@ -166,6 +178,7 @@ public class ContactResourceIt {
 
     @Test
     @DisplayName("update save updated contact and returns empty mono when successful")
+    @WithUserDetails (ADMIN_USER)
     public void update_SaveUpdatedContact_WhenSuccessful() {
         webTestClient
                 .put()
@@ -178,6 +191,7 @@ public class ContactResourceIt {
 
     @Test
     @DisplayName("update returns Mono error when contact does not exist")
+    @WithUserDetails (ADMIN_USER)
     public void update_ReturnMonoError_WhenEmptyMonoIsReturned() {
         BDDMockito.when(this.repository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Mono.empty());

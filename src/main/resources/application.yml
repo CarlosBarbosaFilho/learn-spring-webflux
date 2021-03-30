@@ -1,6 +1,6 @@
 spring:
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/postgres?schema=scwebflux
+    url: r2dbc:postgresql://db:5432/postgres?schema=scwebflux
     username: root
     password: root
 
